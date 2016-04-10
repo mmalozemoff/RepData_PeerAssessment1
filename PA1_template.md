@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 ## Load and preprocess the data
 
@@ -16,7 +11,8 @@ working directory.  In this working directory should exist only the data package
 In this section we will also set the default options of echo = TRUE and clear
 all environment variables in the workspace to ensure it is clean.
 
-```{r loadTheData, echo=TRUE}
+
+```r
 ## Set default options to echo=TRUE (this threw an error so omitting for now)
 #opts_chunk$set(echo = TRUE)
 
@@ -34,7 +30,8 @@ analysis.
 Set the date column as a Date type.  
 Reorder columns so date is first, then interval, then steps.
 
-```{r processTheData, echo=TRUE}
+
+```r
 ## Set date column to Date format
 rawData$date <- as.Date(rawData$date, format="%Y-%m-%d")
 
@@ -50,26 +47,42 @@ Ignore the missing values in the dataset per the assignment instructions.
 
 To do this, use tapply.
 
-```{r calculateSteps, echo=TRUE}
+
+```r
 ## Sum number of steps by date using tapply
 stepsTotal <- tapply(rawData$steps, rawData$date, FUN=sum, na.rm=TRUE)
 ```
 
 2. Make a histogram of the total number of steps taken each day.
 
-```{r makeHistogram, echo=TRUE}
+
+```r
 hist(stepsTotal, breaks=10, col="green", 
      main="Histogram of Total Number of Steps per Day (NAs Removed)", 
      xlab="Total Number of Steps")
 ```
 
+![](PA1_template_files/figure-html/makeHistogram-1.png)
+
 3. Calculate and report the mean and median of the total number of steps taken
 per day.  
 
 Calculate mean and median on *stepsTotal*
-```{r meanAndMedianTotalSteps, echo=TRUE}
+
+```r
 mean(stepsTotal)
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 median(stepsTotal)
+```
+
+```
+## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
@@ -79,7 +92,8 @@ and the average number of steps taken, averaged across all days (y-axis).
 
 First use aggregate to get averages of steps across all intervals, then plot.  
 
-```{r timeSeriesPlot, echo=TRUE}
+
+```r
 ## First get the averages of steps across all intervals
 aveData <- aggregate(rawData$steps, by=list(rawData$interval), FUN=mean, na.rm=TRUE)
 
@@ -90,20 +104,26 @@ plot(aveData$interval, aveData$average, type="l",
      main="Time Series of Interval and Average Steps Taken per Day", 
      xlab="Interval (mins)", 
      ylab="Average Number of Steps")
-
 ```
+
+![](PA1_template_files/figure-html/timeSeriesPlot-1.png)
 
 2. Which 5-minute interval, on average across all the days in the dataset,
 contains the maximum number of steps?  
 
 Find the maximum position with which.max, then get item at that index.  
 
-```{r maxStepsFiveMinInterval, echo=TRUE}
+
+```r
 ## Get the index of the maximum average value
 maxIndex <- which.max(aveData$average)
 
 ## Output the interval at that index
 aveData[maxIndex,]$interval
+```
+
+```
+## [1] 835
 ```
 
 
@@ -119,12 +139,17 @@ the total number of rows with NAs).
 Use is.na to find missing values, then sum up logical vector to get the total
 number.  
 
-``` {r caluclateMissingValues, echo=TRUE}
+
+```r
 ## Find missing values with is.na in the steps column
 missingValues <- is.na(rawData$steps)
 
 ## Sum up logical vector to find out the total number of missing values
 sum(missingValues)
+```
+
+```
+## [1] 2304
 ```
 
 2. Devise a strategy for filling in all of the missing values in the dataset.
@@ -137,7 +162,8 @@ corresponding 5-minute interval.
 For loop that walks over data frame, filling in missing values with the average
 steps value from the calculated value for the corresponding interval.  
 
-``` {r fillMissingValues, echo=TRUE}
+
+```r
 ## Make new data set that is copy of rawData, NAs will be filled in.
 filledInData <- rawData
 
@@ -151,7 +177,30 @@ for (i in 1:nrow(filledInData)) {
 
 ## Verify that NAs are filled in by comparing heads of rawData with new DF.
 head(rawData)
+```
+
+```
+##         date interval steps
+## 1 2012-10-01        0    NA
+## 2 2012-10-01        5    NA
+## 3 2012-10-01       10    NA
+## 4 2012-10-01       15    NA
+## 5 2012-10-01       20    NA
+## 6 2012-10-01       25    NA
+```
+
+```r
 head(filledInData)
+```
+
+```
+##         date interval     steps
+## 1 2012-10-01        0 1.7169811
+## 2 2012-10-01        5 0.3396226
+## 3 2012-10-01       10 0.1320755
+## 4 2012-10-01       15 0.1509434
+## 5 2012-10-01       20 0.0754717
+## 6 2012-10-01       25 2.0943396
 ```
 
 3. Create a new dataset that is equal to the original dataset but with the
@@ -167,7 +216,8 @@ of steps?
 
 Do same steps as per second question above just with new data.  
 
-```{r histogramWithNasReplaced, echo=TRUE}
+
+```r
 ## Sum steps by date using tapply
 newStepsTotal <- tapply(filledInData$steps, filledInData$date, FUN=sum)
 
@@ -176,11 +226,25 @@ hist(newStepsTotal, breaks=10, col="green",
      xlab="Total Number of Steps")
 ```
 
+![](PA1_template_files/figure-html/histogramWithNasReplaced-1.png)
+
 Now display mean and median for new data, *newStepsTotal*.
 
-```{r meanAndMedianWithNasReplaced, echo=TRUE}
+
+```r
 mean(newStepsTotal)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(newStepsTotal)
+```
+
+```
+## [1] 10766.19
 ```
 
 So the biggest difference comes from the fact that the NAs were set to 0 in the
@@ -201,7 +265,8 @@ First, create new day column that is a factor of weekend or weekday.
 Then, iterate over the dataframe setting new day column to weekday or weekend as
 appropriate.  
 
-``` {r newFactorVariableWeekday, echo=TRUE}
+
+```r
 ## Create new factor column for day type (weekday or weekend)
 filledInData$day <- as.factor(c("weekday","weekend"))
 
@@ -226,7 +291,8 @@ First, do aggregate to get averaged step values by interval and day.
 Then, plot this using ggplot2 (it was easier to do this using ggplot2 than the
 base plotting system)
 
-``` {r plotTheStuff, echo=TRUE}
+
+```r
 ## Use aggregate to get the averaged step values by interval and day
 newAveData <- aggregate(filledInData$steps, by=list(filledInData$interval, filledInData$day), FUN=mean)
 
@@ -238,5 +304,6 @@ library(ggplot2)
 ggplot(newAveData, aes(interval, average)) + geom_line() + facet_grid(day ~ .) +
     ggtitle("Time Series of Interval and Mean Steps per Day by Day Type") +
     xlab("Interval (mins)") + ylab("Average Number of Steps")
-
 ```
+
+![](PA1_template_files/figure-html/plotTheStuff-1.png)
